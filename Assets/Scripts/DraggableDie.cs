@@ -1,99 +1,132 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
+
 public class DraggableDie : MonoBehaviour
 {
+    [Header("Dragging Settings")]
+    [SerializeField] private float snapDistance = 1.5f;
+
     private Camera mainCamera;
     private Rigidbody2D rb;
-    private Collider2D col;
 
     private Vector3 offset;
-    private Vector3 startPosition; // To remember where it started
-    private Transform originalParent; // To remember which hand slot it was in
+    private Vector3 startWorldPosition;
+    private Transform originalParent;
 
     private bool isDragging = false;
+    private PlayerHand playerHand;
+    private DieData dieData;
+    private bool isPlaced = false;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        col = GetComponent<Collider2D>();
         mainCamera = Camera.main;
+        if (mainCamera == null) { Debug.LogError("DraggableDie: No camera tagged 'MainCamera' found!"); }
+        if (rb.bodyType != RigidbodyType2D.Kinematic) { Debug.LogWarning($"DraggableDie on {gameObject.name} should likely be Kinematic.", gameObject); }
 
-        if (mainCamera == null)
-        {
-            Debug.LogError("DraggableDie: No camera tagged 'MainCamera' found in the scene!");
-        }
-        // Ensure Rigidbody is set to Kinematic if we never want physics forces
-        if (rb.bodyType != RigidbodyType2D.Kinematic)
-        {
-            Debug.LogWarning($"DraggableDie on {gameObject.name} has Rigidbody type {rb.bodyType}. Consider setting to Kinematic if no physics interactions are desired.", gameObject);
-        }
+    }
+
+    public void Initialize(PlayerHand hand, DieData data, Transform startingParent)
+    {
+        this.playerHand = hand;
+        this.dieData = data;
+        this.originalParent = startingParent;
+        this.isPlaced = false;
     }
 
     void OnMouseDown()
     {
-        Debug.Log(isDragging);
-        if (mainCamera == null) return;
+        if (isPlaced || playerHand == null || mainCamera == null) return;
 
         isDragging = true;
-        startPosition = transform.position; // Record world position
-        originalParent = transform.parent; // Record original parent (the hand slot)
-
-        offset = startPosition - GetMouseWorldPos(); // Calculate offset based on world position
-
-        // Temporarily unparent so dragging is smooth and independent of parent
+        startWorldPosition = transform.position;
+        offset = startWorldPosition - GetMouseWorldPos();
         transform.SetParent(null);
-
-
-        Debug.Log($"Started dragging {gameObject.name} from parent {originalParent?.name ?? "None"}");
+        Debug.Log($"Started dragging {gameObject.name}...");
     }
 
     void OnMouseDrag()
     {
-        if (!isDragging || mainCamera == null) return;
-
+        if (!isDragging) return;
         Vector3 targetPos = GetMouseWorldPos() + offset;
-        rb.MovePosition(targetPos); // Use MovePosition for Kinematic bodies too
+        rb.MovePosition(targetPos);
     }
 
     void OnMouseUp()
     {
         if (!isDragging) return;
-
         isDragging = false;
-        Debug.Log($"Stopped dragging {gameObject.name}");
 
-        // --- Valid Drop Check Placeholder ---
-        // In the future, we will check here if the die is over a valid grid slot.
-        bool droppedOnValidTarget = false; // Hardcoded to false for now
+        GridSlot closestSlot = null;
+        float minDistanceFound = snapDistance;
 
-        if (droppedOnValidTarget)
+        Vector3 currentPosition = transform.position;
+
+        if (GridManager.Instance == null || GridManager.Instance.gridSlots == null)
         {
-            // If it WAS dropped on a valid target (e.g., a grid slot)
-            // We'll add logic here later. For example, setting its new parent
-            // to be the grid slot.
-            Debug.Log($"{gameObject.name} dropped on a valid target (logic not implemented yet).");
-            // Example: transform.SetParent(theGridSlotTransform);
-            // Example: transform.localPosition = Vector3.zero;
+            Debug.LogError("GridManager instance or grid slots not found!");
         }
-        else
+        else 
         {
-            // If not dropped on a valid target, return to original slot
-            Debug.Log($"{gameObject.name} not dropped on valid target, returning to hand slot.");
-            transform.SetParent(originalParent); // Re-attach to the original hand slot
-            transform.localPosition = Vector3.zero; // Reset position within the slot
-                                                    // transform.position = startPosition; // Alternative: directly reset world position
-                                                    // Setting localPosition is usually better after parenting
+            foreach (GridSlot slot in GridManager.Instance.gridSlots)
+            {
+                if (slot == null) continue;
+
+                float distance = Vector3.Distance(currentPosition, slot.transform.position);
+
+                if (distance < minDistanceFound)
+                {
+                    minDistanceFound = distance;
+                    closestSlot = slot;
+                }
+            }
         }
+
+        bool droppedOnValidTarget = false;
+
+        if (closestSlot != null && !closestSlot.IsOccupied)
+        {
+
+            if (closestSlot.PlaceDie(gameObject, this.dieData))
+            {
+                droppedOnValidTarget = true;
+                isPlaced = true;
+
+                transform.SetParent(closestSlot.transform);
+                transform.localPosition = Vector3.zero;
+
+                playerHand.NotifyDiePlacedOnGrid(gameObject);
+                Debug.Log($"{gameObject.name} successfully placed in grid slot {closestSlot.name} by distance check.");
+            }
+            else           
+            {
+                Debug.LogWarning($"{gameObject.name} failed to place in supposedly unoccupied slot {closestSlot.name}. Returning to hand.");
+            }
+        }
+        else if (closestSlot != null && closestSlot.IsOccupied)
+        {
+            Debug.Log($"Slot {closestSlot.name} was closest, but is occupied by {closestSlot.OccupyingDie?.name ?? "something"}. Returning to hand.");
+        }
+
+
+        if (!droppedOnValidTarget)
+        {
+            Debug.Log($"{gameObject.name} not placed on grid (no suitable slot found within {snapDistance} units), returning to hand slot.");
+            transform.SetParent(originalParent);
+            transform.localPosition = Vector3.zero;
+        }
+
+        Debug.Log($"Stopped dragging {gameObject.name}. Placed: {isPlaced}, Parent: {transform.parent?.name ?? "None"}");
     }
+
 
     private Vector3 GetMouseWorldPos()
     {
         if (mainCamera == null) return Vector3.zero;
         Vector3 mousePoint = Input.mousePosition;
-        mousePoint.z = mainCamera.WorldToScreenPoint(transform.position).z;
-        // Use the stored startPosition's Z coordinate if unparenting causes Z issues
-        // mousePoint.z = mainCamera.WorldToScreenPoint(startPosition).z;
+        mousePoint.z = mainCamera.WorldToScreenPoint(startWorldPosition).z;
         return mainCamera.ScreenToWorldPoint(mousePoint);
     }
 }
