@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c63e1df1d0e98a408583c40fe38c993, type: 3}
+  m_Name: D8_Rare_1_Fire_Attack
+  m_EditorClassIdentifier: 
+  dieID: 9fbcdd77-24bf-4f54-929b-480b9748b1fc
+  sides: 8
+  rarity: 2
+  manaCost: 1
+  element: 1
+  actionType: 0
+  targetType: 1

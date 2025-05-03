@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6685531afe3b173479c92c65a590df34, type: 3}
+  m_Name: DieTheme
+  m_EditorClassIdentifier: 
+  elementVisuals:
+  - element: 1
+    backgroundColor: {r: 0.9528302, g: 0.32809716, b: 0.32809716, a: 1}
+  - element: 2
+    backgroundColor: {r: 0.6132076, g: 0.39389652, b: 0.24586153, a: 1}
+  - element: 3
+    backgroundColor: {r: 0.8396226, g: 0.8183424, b: 0.80397826, a: 1}
+  - element: 4
+    backgroundColor: {r: 0.33241364, g: 0.42778698, b: 0.8490566, a: 1}
+  - element: 0
+    backgroundColor: {r: 0, g: 0, b: 0, a: 1}
+  defaultBackgroundColour: {r: 0, g: 0, b: 0, a: 1}
+  actionVisuals:
+  - actionType: 0
+    actionIcon: {fileID: 21300000, guid: f4fce3a3067a4422e96a039b37de993a, type: 3}
+  - actionType: 1
+    actionIcon: {fileID: 21300000, guid: d542206e47c1942f1b92ec4a55512a25, type: 3}
+  - actionType: 2
+    actionIcon: {fileID: 21300000, guid: a4c2702125a8b43efb7d119b8befe416, type: 3}
+  defaultActionIcon: {fileID: 21300000, guid: f4fce3a3067a4422e96a039b37de993a, type: 3}
+  rarityVisuals:
+  - rarity: 0
+    rarityColor: {r: 0, g: 0, b: 0, a: 1}
+  - rarity: 1
+    rarityColor: {r: 0.69166076, g: 0.85896426, b: 0.9339623, a: 1}
+  - rarity: 2
+    rarityColor: {r: 0.8679245, g: 0.56720525, b: 0.27429688, a: 1}
+  - rarity: 3
+    rarityColor: {r: 0.9056604, g: 0.14097545, b: 0.82136154, a: 1}
+  defaultRarityColor: {r: 0, g: 0, b: 0, a: 1}
+  defaultFont: {fileID: 11400000, guid: 5302535af1044152a457ed104f1f4b91, type: 2}
+  manaTextColor: {r: 0, g: 0, b: 0, a: 1}
+  shapePrefabs:
+  - sides: 4
+    diePrefab: {fileID: 1424238597649619829, guid: bf1b6f71e1ce13d40a384ba670e52f51, type: 3}
+  - sides: 6
+    diePrefab: {fileID: 1405126096608052232, guid: 84eb4544f9ec7d14cb8d7e15a2df1f67, type: 3}
+  - sides: 8
+    diePrefab: {fileID: 6864093619071609652, guid: 588341eac9866fe4187d6b1e12714805, type: 3}
+  - sides: 10
+    diePrefab: {fileID: 8699145161544187302, guid: f82b8a4598d32d14e954e7f2ed7dce2e, type: 3}
+  defaultDiePrefab: {fileID: 1424238597649619829, guid: bf1b6f71e1ce13d40a384ba670e52f51, type: 3}
