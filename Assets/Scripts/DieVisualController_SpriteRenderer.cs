@@ -74,12 +74,4 @@ public class DieVisualController_SpriteRenderer : MonoBehaviour
             rollResultText.gameObject.SetActive(false);
         }
     }
-
-    // Optional: Method to clear the display
-    public void ClearDisplay()
-    {
-        HideRollResult();
-        gameObject.SetActive(false);
-        currentDieData = null;
-    }
 }

@@ -12,7 +12,8 @@ GameObject:
   - component: {fileID: 7356082371035971903}
   - component: {fileID: 1786709864004527479}
   - component: {fileID: 3238060973656738261}
-  m_Layer: 0
+  - component: {fileID: 7324596581138927945}
+  m_Layer: 6
   m_Name: D6_Prefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -101,7 +102,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 1.5, y: 1.5}
   m_EdgeRadius: 0
 --- !u!50 &3238060973656738261
 Rigidbody2D:
@@ -130,6 +131,18 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &7324596581138927945
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1405126096608052232}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c1671e9ad9dcb43b5aeabdc818b29f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2117909711895555293
 GameObject:
   m_ObjectHideFlags: 0
@@ -141,7 +154,7 @@ GameObject:
   - component: {fileID: 4453389148501751402}
   - component: {fileID: 6683421804884415353}
   - component: {fileID: 8452782740502027323}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: square
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -208,8 +221,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -280982525
+  m_SortingLayer: 2
   m_SortingOrder: 1
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -240,7 +253,7 @@ GameObject:
   m_Component:
   - component: {fileID: 195965172894008358}
   - component: {fileID: 8985927121742888422}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Circle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -303,8 +316,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -280982525
+  m_SortingLayer: 2
   m_SortingOrder: 3
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -327,7 +340,7 @@ GameObject:
   m_Component:
   - component: {fileID: 9107868449498385826}
   - component: {fileID: 1025903183674319119}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Mana
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -390,8 +403,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -280982525
+  m_SortingLayer: 2
   m_SortingOrder: 2
   m_Sprite: {fileID: 21300000, guid: 90ad77f86d3f340988ade060dbf09fac, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -415,7 +428,7 @@ GameObject:
   - component: {fileID: 946799661677541141}
   - component: {fileID: 817870027132542794}
   - component: {fileID: 5167187313615100352}
-  m_Layer: 5
+  m_Layer: 6
   m_Name: ManaText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -550,7 +563,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8322661247481286377}
   - component: {fileID: 1273115562332964807}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: ActionBorder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -614,8 +627,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -280982525
+  m_SortingLayer: 2
   m_SortingOrder: 2
   m_Sprite: {fileID: 21300000, guid: c3820f10745aa495595abb147d878230, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -640,7 +653,7 @@ GameObject:
   - component: {fileID: 538923989900109867}
   - component: {fileID: 4891163788790658723}
   - component: {fileID: 8904198929532997910}
-  m_Layer: 5
+  m_Layer: 6
   m_Name: Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -688,7 +701,7 @@ Canvas:
   m_VertexColorAlwaysGammaSpace: 0
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
-  m_SortingLayerID: 0
+  m_SortingLayerID: -280982525
   m_SortingOrder: 3
   m_TargetDisplay: 0
 --- !u!114 &4891163788790658723
@@ -742,7 +755,7 @@ GameObject:
   - component: {fileID: 379094212090472860}
   - component: {fileID: 2535544856569466562}
   - component: {fileID: 7220444120138300792}
-  m_Layer: 5
+  m_Layer: 6
   m_Name: RollText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -877,7 +890,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4383769281604700554}
   - component: {fileID: 4233945960686155831}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Border
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -940,8 +953,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -280982525
+  m_SortingLayer: 2
   m_SortingOrder: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0, g: 0, b: 0, a: 1}

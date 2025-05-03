@@ -11,8 +11,8 @@ TagManager:
   - 
   - Water
   - UI
-  - 
-  - 
+  - Dice
+  - Background
   - 
   - 
   - 
@@ -38,11 +38,14 @@ TagManager:
   - 
   - 
   m_SortingLayers:
-  - name: Dice
-    uniqueID: 4013984771
-    locked: 0
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: DiceSlot
+    uniqueID: 1835778823
+    locked: 0
+  - name: Dice
+    uniqueID: 4013984771
     locked: 0
   m_RenderingLayers:
   - Default

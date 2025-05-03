@@ -14,7 +14,7 @@ public class PlayerDeck : MonoBehaviour
 
     private System.Random rng = new System.Random();
 
-    private void Start()
+    private void Awake()
     {
         InitializeDeck();
     }

@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5045091125353385485}
   - component: {fileID: 1635454353368015567}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Mana
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -73,8 +73,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -280982525
+  m_SortingLayer: 2
   m_SortingOrder: 2
   m_Sprite: {fileID: 21300000, guid: 90ad77f86d3f340988ade060dbf09fac, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -97,7 +97,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5498119164179216099}
   - component: {fileID: 2579665423419695352}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: ActionBorder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -161,8 +161,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -280982525
+  m_SortingLayer: 2
   m_SortingOrder: 2
   m_Sprite: {fileID: 21300000, guid: c3820f10745aa495595abb147d878230, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -186,7 +186,7 @@ GameObject:
   - component: {fileID: 7088791289966076770}
   - component: {fileID: 1099487018069821397}
   - component: {fileID: 8837740528767934122}
-  m_Layer: 5
+  m_Layer: 6
   m_Name: RollText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -323,7 +323,7 @@ GameObject:
   - component: {fileID: 8202023602245331100}
   - component: {fileID: 5065884846849072631}
   - component: {fileID: 8919438141290661206}
-  m_Layer: 5
+  m_Layer: 6
   m_Name: Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -371,7 +371,7 @@ Canvas:
   m_VertexColorAlwaysGammaSpace: 0
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
-  m_SortingLayerID: 0
+  m_SortingLayerID: -280982525
   m_SortingOrder: 3
   m_TargetDisplay: 0
 --- !u!114 &5065884846849072631
@@ -424,7 +424,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2954146989795460814}
   - component: {fileID: 5092993813029353885}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Circle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -487,8 +487,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -280982525
+  m_SortingLayer: 2
   m_SortingOrder: 3
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -512,7 +512,7 @@ GameObject:
   - component: {fileID: 4566199479315336563}
   - component: {fileID: 8682535284962976146}
   - component: {fileID: 4512798518471261541}
-  m_Layer: 5
+  m_Layer: 6
   m_Name: ManaText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -648,7 +648,7 @@ GameObject:
   - component: {fileID: 2269075693123328043}
   - component: {fileID: 2154301664829129003}
   - component: {fileID: 5415518546327738275}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Octagon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -715,8 +715,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -280982525
+  m_SortingLayer: 2
   m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: c0df7b2a4b37b4f8ea7fc74079e500a4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -747,7 +747,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4989268761682328586}
   - component: {fileID: 3191980355606257747}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Border
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -810,8 +810,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -280982525
+  m_SortingLayer: 2
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: c0df7b2a4b37b4f8ea7fc74079e500a4, type: 3}
   m_Color: {r: 0, g: 0, b: 0, a: 1}
@@ -836,7 +836,8 @@ GameObject:
   - component: {fileID: 3290915227736096488}
   - component: {fileID: 7031931502722644748}
   - component: {fileID: 5954905544885328525}
-  m_Layer: 0
+  - component: {fileID: 2883495488650523193}
+  m_Layer: 6
   m_Name: D10_Prefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -925,7 +926,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 1.5, y: 1.5}
   m_EdgeRadius: 0
 --- !u!50 &5954905544885328525
 Rigidbody2D:
@@ -954,3 +955,15 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &2883495488650523193
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8699145161544187302}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c1671e9ad9dcb43b5aeabdc818b29f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

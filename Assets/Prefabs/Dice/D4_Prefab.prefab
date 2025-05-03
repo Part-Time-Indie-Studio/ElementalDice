@@ -12,7 +12,8 @@ GameObject:
   - component: {fileID: 5285019742318839513}
   - component: {fileID: 1829643311711874991}
   - component: {fileID: 5423513320226302900}
-  m_Layer: 0
+  - component: {fileID: 5018140012668891721}
+  m_Layer: 6
   m_Name: D4_Prefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -101,7 +102,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 1.5, y: 1.5}
   m_EdgeRadius: 0
 --- !u!50 &5423513320226302900
 Rigidbody2D:
@@ -130,6 +131,18 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &5018140012668891721
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1424238597649619829}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66c1671e9ad9dcb43b5aeabdc818b29f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &3420455243814202329
 GameObject:
   m_ObjectHideFlags: 0
@@ -140,7 +153,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3892486529330934901}
   - component: {fileID: 1840749746611387631}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Border
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -204,7 +217,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -280982525
-  m_SortingLayer: -1
+  m_SortingLayer: 2
   m_SortingOrder: -1
   m_Sprite: {fileID: 7482667652216324306, guid: 75f5f34dc1b5347e0b8351032682f224, type: 3}
   m_Color: {r: 0, g: 0, b: 0, a: 1}
@@ -228,7 +241,7 @@ GameObject:
   - component: {fileID: 2252728610937581571}
   - component: {fileID: 5213637874514587827}
   - component: {fileID: 2041671724313971004}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Triangle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -296,7 +309,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -280982525
-  m_SortingLayer: -1
+  m_SortingLayer: 2
   m_SortingOrder: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 75f5f34dc1b5347e0b8351032682f224, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -328,7 +341,7 @@ GameObject:
   - component: {fileID: 1213517047244469229}
   - component: {fileID: 1060132180521579584}
   - component: {fileID: 6392253369592968242}
-  m_Layer: 5
+  m_Layer: 6
   m_Name: ManaText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -464,7 +477,7 @@ GameObject:
   - component: {fileID: 6889814665084446282}
   - component: {fileID: 1511076808394955205}
   - component: {fileID: 6617872309463157259}
-  m_Layer: 5
+  m_Layer: 6
   m_Name: RollText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -599,7 +612,7 @@ GameObject:
   m_Component:
   - component: {fileID: 639354200594430642}
   - component: {fileID: 5628432993092346945}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Mana
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -663,7 +676,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -280982525
-  m_SortingLayer: -1
+  m_SortingLayer: 2
   m_SortingOrder: 2
   m_Sprite: {fileID: 21300000, guid: 90ad77f86d3f340988ade060dbf09fac, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -688,7 +701,7 @@ GameObject:
   - component: {fileID: 3090512712682825494}
   - component: {fileID: 8333496895726619564}
   - component: {fileID: 3019796296783059911}
-  m_Layer: 5
+  m_Layer: 6
   m_Name: Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -789,7 +802,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7299376232732255084}
   - component: {fileID: 4967572329871552677}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Circle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -853,7 +866,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -280982525
-  m_SortingLayer: -1
+  m_SortingLayer: 2
   m_SortingOrder: 1
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -876,7 +889,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8538853017488704169}
   - component: {fileID: 3805254148044898431}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: ActionBorder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -941,7 +954,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -280982525
-  m_SortingLayer: -1
+  m_SortingLayer: 2
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: c3820f10745aa495595abb147d878230, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
