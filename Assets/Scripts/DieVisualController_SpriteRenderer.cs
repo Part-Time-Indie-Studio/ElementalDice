@@ -1,7 +1,7 @@
 using UnityEngine;
 using TMPro;
 
-public class DieVisualController_SpriteRenderer : MonoBehaviour
+public class DieVisualControllerSpriteRenderer : MonoBehaviour
 {
     [Header("Theme Data")]
     [SerializeField] private DieThemeData themeData; // Assign your DieThemeData asset here!
@@ -14,7 +14,7 @@ public class DieVisualController_SpriteRenderer : MonoBehaviour
     [SerializeField] private TextMeshProUGUI manaCostText;
     [SerializeField] private TextMeshProUGUI rollResultText;
 
-    private DieData currentDieData; 
+    private DieData _currentDieData; 
 
     public void DisplayDie(DieData dieData)
     {
@@ -25,29 +25,29 @@ public class DieVisualController_SpriteRenderer : MonoBehaviour
             return;
         }
 
-        currentDieData = dieData;
+        _currentDieData = dieData;
         gameObject.SetActive(true);
 
         if (manaCostText)
         {
-            manaCostText.text = currentDieData.manaCost.ToString();
+            manaCostText.text = _currentDieData.manaCost.ToString();
             manaCostText.color = themeData.manaTextColor;
             manaCostText.gameObject.SetActive(true);
         }
 
         if (backgroundSpriteRenderer)
         {
-            backgroundSpriteRenderer.color = themeData.GetElementColor(currentDieData.element);
+            backgroundSpriteRenderer.color = themeData.GetElementColor(_currentDieData.element);
         }
 
         if (actionIconSpriteRenderer)
         {
-            actionIconSpriteRenderer.sprite = themeData.GetActionIcon(currentDieData.actionType);
+            actionIconSpriteRenderer.sprite = themeData.GetActionIcon(_currentDieData.actionType);
             actionIconSpriteRenderer.enabled = actionIconSpriteRenderer.sprite != null;
         }
         if (rarityIndicatorSpriteRenderer)
         {
-            rarityIndicatorSpriteRenderer.color = themeData.GetRarityColor(currentDieData.rarity);
+            rarityIndicatorSpriteRenderer.color = themeData.GetRarityColor(_currentDieData.rarity);
         }
 
         HideRollResult();

@@ -1,30 +1,31 @@
+using System;
 using UnityEngine;
 using TMPro; 
 using System.Collections.Generic;
 
 
-[System.Serializable]
+[Serializable]
 public class ElementVisualMapping
 {
     public DieElement element;
     public Color backgroundColor = Color.white; // Or Material if you prefer
 }
 
-[System.Serializable]
+[Serializable]
 public class ActionVisualMapping
 {
     public DieActionType actionType;
     public Sprite actionIcon;
 }
 
-[System.Serializable]
+[Serializable]
 public class RarityVisualMapping
 {
     public DieRarity rarity;
     public Color rarityColor = Color.white;
 }
 
-[System.Serializable]
+[Serializable]
 public class DieShapePrefabMapping
 {
     public DieSides sides;

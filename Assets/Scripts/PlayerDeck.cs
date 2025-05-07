@@ -12,7 +12,7 @@ public class PlayerDeck : MonoBehaviour
     public int DrawPileCount => drawPile.Count;
     public int DiscardPileCount => discardPile.Count;
 
-    private System.Random rng = new System.Random();
+    private System.Random _rng = new System.Random();
 
     private void Awake()
     {
@@ -38,7 +38,7 @@ public class PlayerDeck : MonoBehaviour
         while (n > 1)
         {
             n--;
-            int k = rng.Next(n + 1); 
+            int k = _rng.Next(n + 1); 
             DieData value = drawPile[k];
             drawPile[k] = drawPile[n];
             drawPile[n] = value;

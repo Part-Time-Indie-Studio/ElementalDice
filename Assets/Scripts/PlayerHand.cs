@@ -1,5 +1,7 @@
+// Filename: Scripts/PlayerHand.cs
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 
 public class PlayerHand : MonoBehaviour
 {
@@ -9,7 +11,7 @@ public class PlayerHand : MonoBehaviour
     [SerializeField] private List<Transform> handSlots;
 
     [Header("Hand Settings")]
-    [SerializeField] private int startingHandSize = 5; 
+    [SerializeField] private int startingHandSize = 5;
 
     private List<DieData> diceDataInHand = new List<DieData>();
     private List<GameObject> diceVisualsInHand = new List<GameObject>();
@@ -20,138 +22,188 @@ public class PlayerHand : MonoBehaviour
         DrawInitialHand();
     }
 
-    // Prepare the hand lists
     void InitializeHand()
     {
         diceDataInHand.Clear();
         diceVisualsInHand.Clear();
     }
 
-    // Draws the initial hand at the start
-    void DrawInitialHand()
+    public void DrawInitialHand()
     {
         Debug.Log("Drawing initial hand...");
         for (int i = 0; i < startingHandSize; i++)
         {
-            // Break loop early if hand becomes full during initial draw
             if (diceVisualsInHand.Count >= handSlots.Count) break;
             DrawSingleDieToHand();
         }
         Debug.Log($"Initial hand draw complete. Dice in hand: {diceVisualsInHand.Count}");
     }
 
-    // Draws one die from the deck into the next available hand slot
     public void DrawSingleDieToHand()
     {
-
-        // Draw from the deck
         DieData drawnDieData = playerDeck.DrawDie();
-
-        // Check if a die was successfully drawn
         if (drawnDieData == null)
         {
             Debug.LogWarning("PlayerHand: Attempted to draw but deck returned null (likely empty).");
             return;
         }
 
-        // Find the next empty slot index
-        int emptySlotIndex = diceVisualsInHand.Count;
-
-        if (emptySlotIndex >= handSlots.Count)
+        // Find an empty slot
+        Transform slotTransform = null;
+        for(int i = 0; i < handSlots.Count; i++)
         {
-            Debug.LogError($"Calculated empty slot index {emptySlotIndex} is out of bounds for handSlots list (Size: {handSlots.Count}). Cannot place die.");
-            // Maybe discard the drawn die?
-            playerDeck.DiscardDie(drawnDieData);
-            return;
+            bool slotOccupied = diceVisualsInHand.Any(d => d.transform.parent == handSlots[i]);
+            if (!slotOccupied)
+            {
+                slotTransform = handSlots[i];
+                break;
+            }
         }
 
-        // Get the correct prefab for the die's shape
+        if (slotTransform == null)
+        {
+            Debug.LogWarning("PlayerHand: No empty hand slots available to draw a new die.");
+            playerDeck.DiscardDie(drawnDieData); 
+            return;
+        }
+        
         GameObject diePrefab = dieTheme.GetPrefabForSides(drawnDieData.sides);
         if (diePrefab == null)
         {
-            Debug.LogError($"PlayerHand: No prefab found in DieThemeData for sides: {drawnDieData.sides}. Cannot instantiate die visual.");
+            Debug.LogError($"PlayerHand: No prefab found for sides: {drawnDieData.sides}. Cannot instantiate die visual.");
             playerDeck.DiscardDie(drawnDieData);
             return;
         }
 
-        // Instantiate the visual prefab as a child of the correct hand slot
-        Transform slotTransform = handSlots[emptySlotIndex];
         GameObject dieVisualInstance = Instantiate(diePrefab, slotTransform);
-
-        // Reset local transform 
         dieVisualInstance.transform.localPosition = Vector3.zero;
         dieVisualInstance.transform.localRotation = Quaternion.identity;
         dieVisualInstance.transform.localScale = Vector3.one;
-
-        // Get the visual controller component from the instantiated die
-        DieVisualController_SpriteRenderer visualController = dieVisualInstance.GetComponent<DieVisualController_SpriteRenderer>();
-        if (visualController == null)
+        int rollResult = 0;
+        DieVisualControllerSpriteRenderer visualController = dieVisualInstance.GetComponent<DieVisualControllerSpriteRenderer>();
+        
+        if (visualController != null)
         {
-            Debug.LogError($"PlayerHand: Instantiated die prefab '{diePrefab.name}' is missing the DieVisualController_SpriteRenderer script.", dieVisualInstance);
-            Destroy(dieVisualInstance); // Clean up the broken instance
+            visualController.DisplayDie(drawnDieData); // This sets up the die and calls HideRollResult()
+            
+            int maxRollValue = drawnDieData.GetMaxRollValue();
+            rollResult = Random.Range(1, maxRollValue + 1); // Generates a number from 1 to maxRollValue
+            
+            Debug.Log($"Die {drawnDieData.name} (Sides: {drawnDieData.sides}) drawn to hand, initially rolled: {rollResult}");
+            visualController.ShowRollResult(rollResult);
+        }
+        else
+        {
+            Debug.LogError($"PlayerHand: Instantiated die prefab '{diePrefab.name}' is missing DieVisualController_SpriteRenderer.", dieVisualInstance);
+            Destroy(dieVisualInstance); // Clean up
+            playerDeck.DiscardDie(drawnDieData); // Return die to deck
             return;
         }
-
-        // Tell the visual controller to display the drawn die's data
-        visualController.DisplayDie(drawnDieData);
 
         DraggableDie draggable = dieVisualInstance.GetComponent<DraggableDie>();
         if (draggable != null)
         {
-            // Call Initialize to pass the PlayerHand reference, the DieData, and the starting parent transform
             draggable.Initialize(this, drawnDieData, slotTransform);
-            Debug.Log($"PlayerHand: Initialized DraggableDie on {dieVisualInstance.name}.");
+            draggable.SetCurrentRollValue(rollResult);
         }
         else
         {
-            // Log an error if the DraggableDie script is missing from the prefab
-            Debug.LogError($"PlayerHand: Instantiated die prefab '{diePrefab.name}' is missing the DraggableDie script!", dieVisualInstance);
-            // Clean up the instance since it won't be draggable
-            Destroy(dieVisualInstance);
-            // No need to discard drawnDieData here
-            return; // Stop processing this die
+            Debug.LogError($"PlayerHand: Instantiated die prefab '{diePrefab.name}' is missing DraggableDie script!", dieVisualInstance);
+            Destroy(dieVisualInstance); // Clean up
+            // No need to discard drawnDieData again if already handled by visual controller missing
+            return;
         }
 
-        // Add the data and visual instance to our tracking lists
         diceDataInHand.Add(drawnDieData);
         diceVisualsInHand.Add(dieVisualInstance);
-
-        Debug.Log($"Drew die {drawnDieData.name} into hand slot {emptySlotIndex}.");
+        Debug.Log($"Drew die {drawnDieData.name} into slot: {slotTransform.name}.");
     }
 
     public void NotifyDiePlacedOnGrid(GameObject dieVisualInstance)
     {
-        int index = diceVisualsInHand.FindIndex(visual => visual == dieVisualInstance);
-
-        if (index != -1) 
+        int index = diceVisualsInHand.IndexOf(dieVisualInstance);
+        if (index != -1)
         {
-            Debug.Log($"PlayerHand: Received notification that die visual '{dieVisualInstance.name}' was placed on grid. Found at index {index}.");
-
-            DieData data = null;
-            if (index < diceDataInHand.Count)
-            {
-                data = diceDataInHand[index];
-                Debug.Log($"PlayerHand: Corresponding data is '{data?.name ?? "Unknown"}'. Removing from both lists.");
-            }
-            else
-            {
-                Debug.LogError($"PlayerHand: Mismatch between visual list and data list sizes! Index {index} is out of bounds for data list (Size: {diceDataInHand.Count}). Removing visual only.");
-            }
-
+            Debug.Log($"PlayerHand: Die visual '{dieVisualInstance.name}' was placed on grid. Removing from hand tracking.");
             diceVisualsInHand.RemoveAt(index);
-
-            if (index < diceDataInHand.Count) 
+            if (index < diceDataInHand.Count)
             {
                 diceDataInHand.RemoveAt(index);
             }
-
+            else
+            {
+                Debug.LogError($"PlayerHand: Index mismatch when trying to remove data for {dieVisualInstance.name}. Data count: {diceDataInHand.Count}, Index: {index}");
+            }
             Debug.Log($"PlayerHand: Hand lists updated. Visuals count: {diceVisualsInHand.Count}, Data count: {diceDataInHand.Count}.");
-
         }
         else
         {
-            // This might happen if the die was somehow not tracked correctly
-            Debug.LogWarning($"PlayerHand: Could not find die visual {dieVisualInstance.name} in 'diceVisualsInHand' list to remove after grid placement notification.", dieVisualInstance);
+            Debug.LogWarning($"PlayerHand: Could not find die visual {dieVisualInstance.name} in 'diceVisualsInHand' to remove after grid placement.", dieVisualInstance);
         }
+    }
+
+    public bool ReclaimDieToHand(GameObject dieVisualInstance, DieData dieData)
+    {
+        if (dieVisualInstance == null || dieData == null)
+        {
+            Debug.LogError("PlayerHand: ReclaimDieToHand called with null die visual or data.");
+            return false;
+        }
+
+        Transform targetSlot = null;
+        int existingVisualIndex = diceVisualsInHand.IndexOf(dieVisualInstance);
+
+        if (existingVisualIndex != -1)
+        {
+            Debug.Log($"PlayerHand: Die {dieVisualInstance.name} is already in hand lists. Ensuring it's properly parented.");
+            if (dieVisualInstance.transform.parent != null && handSlots.Contains(dieVisualInstance.transform.parent))
+            {
+                targetSlot = dieVisualInstance.transform.parent;
+            }
+        }
+
+        if (targetSlot == null)
+        {
+            for (int i = 0; i < handSlots.Count; i++)
+            {
+                bool slotIsCurrentlyOccupied = false;
+                foreach (GameObject visualInHand in diceVisualsInHand)
+                {
+                    if (visualInHand == dieVisualInstance && visualInHand.transform.parent == handSlots[i]) continue;
+                    if (visualInHand.transform.parent == handSlots[i])
+                    {
+                        slotIsCurrentlyOccupied = true;
+                        break;
+                    }
+                }
+                if (!slotIsCurrentlyOccupied)
+                {
+                    targetSlot = handSlots[i];
+                    break;
+                }
+            }
+        }
+
+        if (targetSlot != null)
+        {
+            dieVisualInstance.transform.SetParent(targetSlot);
+            dieVisualInstance.transform.localPosition = Vector3.zero;
+            dieVisualInstance.transform.localRotation = Quaternion.identity;
+            dieVisualInstance.transform.localScale = Vector3.one;
+
+            if (existingVisualIndex == -1) 
+            {
+                diceVisualsInHand.Add(dieVisualInstance);
+                diceDataInHand.Add(dieData);
+            }
+
+
+
+            Debug.Log($"PlayerHand: Die {dieVisualInstance.name} now in hand slot {targetSlot.name}. Visuals: {diceVisualsInHand.Count}, Data: {diceDataInHand.Count}");
+            return true;
+        }
+
+        Debug.LogWarning($"PlayerHand: No suitable hand slot found for {dieVisualInstance.name}. Hand might be full.");
+        return false;
     }
 }
