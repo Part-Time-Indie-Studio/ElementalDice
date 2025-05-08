@@ -901,8 +901,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
+  maxMana: 3
   healthText: {fileID: 858405851}
   blockText: {fileID: 20680896}
+  manaText: {fileID: 130016655}
   OnPlayerDied:
     m_PersistentCalls:
       m_Calls: []
@@ -910,6 +912,9 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   OnBlockChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  OnManaChanged:
     m_PersistentCalls:
       m_Calls: []
 --- !u!4 &493691540
@@ -2716,9 +2721,50 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerStats: {fileID: 493691539}
   currentEnemy: {fileID: 193874836}
+  playerHand: {fileID: 896486533}
   playTurnButton: {fileID: 266274024}
   playerStartingHealth: 100
+  playerStartingMaxMana: 3
   enemyStartingHealth: 75
+  OnSetupCombatComplete:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPlayerTurnStart:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPlayerActionPhaseStart:
+    m_PersistentCalls:
+      m_Calls: []
+  OnProcessSingleDie:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1668007438}
+        m_TargetAssemblyTypeName: CombatManager, Assembly-CSharp
+        m_MethodName: ResolveSingleDieAction
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  OnPlayerActionPhaseEnd:
+    m_PersistentCalls:
+      m_Calls: []
+  OnEnemyTurnStart:
+    m_PersistentCalls:
+      m_Calls: []
+  OnEnemyActionResolved:
+    m_PersistentCalls:
+      m_Calls: []
+  OnEnemyTurnEnd:
+    m_PersistentCalls:
+      m_Calls: []
+  OnCombatEnd:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!4 &1668007439
 Transform:
   m_ObjectHideFlags: 0

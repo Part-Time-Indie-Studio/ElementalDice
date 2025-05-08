@@ -1,7 +1,7 @@
 // Filename: Scripts/PlayerStats.cs
 using UnityEngine;
-using TMPro; // For TextMeshPro UI elements
-using UnityEngine.Events; // For UnityEvents
+using TMPro;
+using UnityEngine.Events;
 
 public class PlayerStats : MonoBehaviour
 {
@@ -9,40 +9,46 @@ public class PlayerStats : MonoBehaviour
     [SerializeField] private int maxHealth = 100;
     public int CurrentHealth { get; private set; }
     public int CurrentBlock { get; private set; }
-    
+    [SerializeField] private int maxMana = 3; // Default max mana
     public int CurrentMana { get; private set; }
 
     [Header("UI References")]
     [SerializeField] private TextMeshProUGUI healthText;
     [SerializeField] private TextMeshProUGUI blockText;
+    [SerializeField] private TextMeshProUGUI manaText; // Add this in the Inspector
 
-    // Events for other systems to subscribe to (e.g., game over, sound effects)
+    [Header("Events")]
     public UnityEvent OnPlayerDied;
     public UnityEvent OnHealthChanged;
     public UnityEvent OnBlockChanged;
+    public UnityEvent OnManaChanged; // New event for mana
 
     void Awake()
     {
+        // Initialize with default values, CombatManager can override
         CurrentHealth = maxHealth;
         CurrentBlock = 0;
+        CurrentMana = maxMana; // Start with full mana
         UpdateUI();
     }
 
-    public void Initialize(int startingHealth, int newMaxHealth)
+    public void Initialize(int startingHealth, int newMaxHealth, int startingMana, int newMaxMana)
     {
         maxHealth = newMaxHealth;
         CurrentHealth = startingHealth;
-        CurrentBlock = 0; // Reset block at the start of combat/turn usually
+        maxMana = newMaxMana;
+        CurrentMana = startingMana;
+        CurrentBlock = 0;
         UpdateUI();
         OnHealthChanged.Invoke();
         OnBlockChanged.Invoke();
+        OnManaChanged.Invoke();
     }
 
     public void AddBlock(int amount)
     {
         if (amount <= 0) return;
         CurrentBlock += amount;
-        Debug.Log($"Player gained {amount} block. Total block: {CurrentBlock}");
         UpdateUI();
         OnBlockChanged.Invoke();
     }
@@ -50,36 +56,26 @@ public class PlayerStats : MonoBehaviour
     public void TakeDamage(int damageAmount)
     {
         if (damageAmount <= 0) return;
-        Debug.Log($"Player taking {damageAmount} damage.");
-
         int damageRemaining = damageAmount;
-
-        // Apply block first
         if (CurrentBlock > 0)
         {
             if (CurrentBlock >= damageRemaining)
             {
                 CurrentBlock -= damageRemaining;
                 damageRemaining = 0;
-                Debug.Log($"Damage fully absorbed by block. Block remaining: {CurrentBlock}");
             }
             else
             {
                 damageRemaining -= CurrentBlock;
                 CurrentBlock = 0;
-                Debug.Log($"Block broken. Damage remaining: {damageRemaining}");
             }
             OnBlockChanged.Invoke();
         }
-
-        // Apply remaining damage to health
         if (damageRemaining > 0)
         {
             CurrentHealth -= damageRemaining;
-            Debug.Log($"Player health reduced by {damageRemaining}. Current health: {CurrentHealth}");
             OnHealthChanged.Invoke();
         }
-
         if (CurrentHealth <= 0)
         {
             CurrentHealth = 0;
@@ -92,40 +88,64 @@ public class PlayerStats : MonoBehaviour
     {
         if (amount <= 0) return;
         CurrentHealth += amount;
-        if (CurrentHealth > maxHealth)
-        {
-            CurrentHealth = maxHealth;
-        }
-        Debug.Log($"Player healed for {amount}. Current health: {CurrentHealth}");
+        if (CurrentHealth > maxHealth) CurrentHealth = maxHealth;
         UpdateUI();
         OnHealthChanged.Invoke();
     }
 
-    // Called at the start of player's turn to clear block from previous turn
     public void ClearBlock()
     {
         CurrentBlock = 0;
-        Debug.Log("Player block cleared at start of turn.");
         UpdateUI();
         OnBlockChanged.Invoke();
+    }
+    
+    public bool SpendMana(int amount)
+    {
+        if (amount < 0) return false; // Cannot spend negative mana
+        if (CurrentMana >= amount)
+        {
+            CurrentMana -= amount;
+            Debug.Log($"Player spent {amount} mana. Remaining: {CurrentMana}");
+            UpdateUI();
+            OnManaChanged.Invoke();
+            return true;
+        }
+        Debug.Log($"Player has insufficient mana. Tried to spend {amount}, has {CurrentMana}");
+        return false;
+    }
+
+    public void GainMana(int amount)
+    {
+        if (amount <= 0) return;
+        CurrentMana += amount;
+        if (CurrentMana > maxMana)
+        {
+            CurrentMana = maxMana;
+        }
+        Debug.Log($"Player gained {amount} mana. Total mana: {CurrentMana}");
+        UpdateUI();
+        OnManaChanged.Invoke();
+    }
+
+    public void RefillManaToMax()
+    {
+        CurrentMana = maxMana;
+        Debug.Log($"Player mana refilled to {CurrentMana}");
+        UpdateUI();
+        OnManaChanged.Invoke();
     }
 
     private void Die()
     {
         Debug.Log("Player has died!");
         OnPlayerDied.Invoke();
-        // Handle game over logic here or via the event
     }
 
     private void UpdateUI()
     {
-        if (healthText != null)
-        {
-            healthText.text = $"HP: {CurrentHealth} / {maxHealth}";
-        }
-        if (blockText != null)
-        {
-            blockText.text = $"Block: {CurrentBlock}";
-        }
+        if (healthText != null) healthText.text = $"HP: {CurrentHealth} / {maxHealth}";
+        if (blockText != null) blockText.text = $"Block: {CurrentBlock}";
+        if (manaText != null) manaText.text = $"Mana: {CurrentMana} / {maxMana}"; // Update mana display
     }
 }

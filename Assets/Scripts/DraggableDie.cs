@@ -1,27 +1,30 @@
 // Filename: Scripts/DraggableDie.cs
 using UnityEngine;
+using System.Collections.Generic; // Required for List<Transform>
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class DraggableDie : MonoBehaviour
 {
     [Header("Dragging Settings")]
     [SerializeField] private float snapDistance = 1.5f;
+    
+
+    [Header("Hand Slot Drop Settings")] // New field for this logic
+    [SerializeField] private float handSlotDropDetectionRadius = 0.75f; // How close to a slot center to count as a drop
 
     private Camera mainCamera;
     private Rigidbody2D rb;
-
     private Vector3 offset;
     private Vector3 startWorldPosition;
-
     private bool isDragging = false;
-    private PlayerHand playerHand;
+
+    private PlayerHand playerHand; // Already exists, used to get slot transforms
     private DieData dieData;
+    public int CurrentRollValue { get; private set; }
 
     private Transform parentBeforeDrag;
     private GridSlot slotOccupiedBeforeDrag;
     
-    public int CurrentRollValue { get; private set; }
-
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -32,36 +35,20 @@ public class DraggableDie : MonoBehaviour
 
     public void Initialize(PlayerHand hand, DieData data, Transform startingParent)
     {
-        this.playerHand = hand;
+        this.playerHand = hand; // Critical: playerHand is assigned here
         this.dieData = data;
-        // Ensure the die is correctly parented to its starting (hand) slot
         transform.SetParent(startingParent);
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
         transform.localScale = Vector3.one;
     }
-    
-        public void SetCurrentRollValue(int rollValue)
-        {
-            this.CurrentRollValue = rollValue;
-        }
-    
-        public DieData GetDieData()
-        {
-            return dieData;
-        }
+    public void SetCurrentRollValue(int rollValue) { this.CurrentRollValue = rollValue; }
+    public DieData GetDieData() { return dieData; }
 
     void OnMouseDown()
     {
-        if (playerHand == null || mainCamera == null || dieData == null)
-        {
-            Debug.LogWarning($"DraggableDie on {gameObject.name} is not properly initialized.");
-            return;
-        }
-
+        if (playerHand == null || mainCamera == null || dieData == null) return;
         isDragging = true;
-        rb.isKinematic = true;
-
         startWorldPosition = transform.position;
         offset = startWorldPosition - GetMouseWorldPos();
         parentBeforeDrag = transform.parent;
@@ -71,153 +58,218 @@ public class DraggableDie : MonoBehaviour
             slotOccupiedBeforeDrag = parentBeforeDrag.GetComponent<GridSlot>();
             if (slotOccupiedBeforeDrag != null && slotOccupiedBeforeDrag.OccupyingDie == gameObject)
             {
-                Debug.Log($"Started dragging {gameObject.name} from slot {slotOccupiedBeforeDrag.name}. Removing from slot.");
-                slotOccupiedBeforeDrag.RemoveDie();
+                slotOccupiedBeforeDrag.RemoveDie(); 
             }
             else
             {
-                slotOccupiedBeforeDrag = null;
-                Debug.Log($"Started dragging {gameObject.name} from parent: {parentBeforeDrag.name} (not a recognized occupied grid slot).");
+                slotOccupiedBeforeDrag = null; 
             }
         }
-        else
-        {
-            slotOccupiedBeforeDrag = null;
-            Debug.LogWarning($"Started dragging {gameObject.name} which had no parent.");
-        }
-        transform.SetParent(null);
+        else { slotOccupiedBeforeDrag = null; }
+        transform.SetParent(null); 
     }
-
-    void OnMouseDrag()
+     void OnMouseDrag()
     {
         if (!isDragging) return;
-        Vector3 targetPos = GetMouseWorldPos() + offset;
-        rb.MovePosition(targetPos);
+        rb.MovePosition(GetMouseWorldPos() + offset);
     }
 
+    // OnMouseUp needs to use the updated CheckAndPlaceInHandZone
     void OnMouseUp()
     {
         if (!isDragging) return;
         isDragging = false;
 
-        GridSlot closestSlot = null;
-        float minDistanceFoundSqr = snapDistance * snapDistance;
+        GridSlot closestGridSlot = FindClosestGridSlot();
+        bool placedSuccessfullyOnGrid = false;
 
-        if (GridManager.Instance == null || GridManager.Instance.gridSlots == null)
+        if (closestGridSlot != null)
         {
-            Debug.LogError("GridManager instance or grid slots not found! Attempting to return die to hand.");
-            AttemptReturnToHand();
-            return;
+            if (closestGridSlot == slotOccupiedBeforeDrag) 
+            {
+                if (closestGridSlot.PlaceDie(gameObject, this.dieData))
+                {
+                    SetDieVisualsOnParent(closestGridSlot.transform);
+                    placedSuccessfullyOnGrid = true; 
+                }
+            }
+            else if (!closestGridSlot.IsOccupied) 
+            {
+                if (slotOccupiedBeforeDrag == null) 
+                {
+                    if (CombatManager.Instance != null && CombatManager.Instance.playerStats != null)
+                    {
+                        PlayerStats currentPlayerStats = CombatManager.Instance.playerStats;
+                        if (currentPlayerStats.CurrentMana >= this.dieData.manaCost)
+                        {
+                            if (closestGridSlot.PlaceDie(gameObject, this.dieData))
+                            {
+                                currentPlayerStats.SpendMana(this.dieData.manaCost);
+                                SetDieVisualsOnParent(closestGridSlot.transform);
+                                if (playerHand != null) playerHand.NotifyDiePlacedOnGrid(gameObject);
+                                placedSuccessfullyOnGrid = true;
+                            }
+                        } else { Debug.Log($"Insufficient mana for {this.dieData.name}. Cost: {this.dieData.manaCost}, Have: {currentPlayerStats.CurrentMana}"); }
+                    } else { Debug.LogError("CombatManager/PlayerStats not found for mana check during placement.");}
+                }
+                else 
+                {
+                    if (closestGridSlot.PlaceDie(gameObject, this.dieData))
+                    {
+                        SetDieVisualsOnParent(closestGridSlot.transform);
+                        placedSuccessfullyOnGrid = true;
+                    }
+                }
+            }
         }
 
+        if (placedSuccessfullyOnGrid)
+        {
+             Debug.Log($"{gameObject.name} placed on grid slot: {transform.parent?.name ?? "None"}.");
+            return; 
+        }
+
+        // Updated CheckAndPlaceInHandZone is called here
+        if (CheckAndPlaceInHandZone()) 
+        {
+            Debug.Log($"{gameObject.name} returned to hand by dropping near a hand slot.");
+            return; 
+        }
+        
+        Debug.Log($"{gameObject.name} not placed on grid or near a hand slot. Performing fallback return.");
+        if (slotOccupiedBeforeDrag != null)  
+        {
+            Debug.Log($"Attempting to return {gameObject.name} to its original grid slot: {slotOccupiedBeforeDrag.name}.");
+            if (slotOccupiedBeforeDrag.PlaceDie(gameObject, this.dieData))
+            {
+                SetDieVisualsOnParent(slotOccupiedBeforeDrag.transform);
+            }
+            else 
+            {
+                Debug.LogError($"Failed to return {gameObject.name} to its original grid slot {slotOccupiedBeforeDrag.name}. Attempting to send to any hand slot.");
+                AttemptReturnToAnyAvailableHandSlot(true); 
+            }
+        }
+        else 
+        {
+            Debug.Log($"{gameObject.name} came from hand and was not placed elsewhere. Returning to an available hand slot.");
+            AttemptReturnToAnyAvailableHandSlot(false); 
+        }
+    }
+    // ... (FindClosestGridSlot remains the same) ...
+     private GridSlot FindClosestGridSlot()
+    {
+        GridSlot closest = null;
+        float minDistanceSqr = snapDistance * snapDistance;
+        if (GridManager.Instance == null || GridManager.Instance.gridSlots == null) return null;
         foreach (GridSlot slot in GridManager.Instance.gridSlots)
         {
             if (slot == null) continue;
             float distanceSqr = (transform.position - slot.transform.position).sqrMagnitude;
-            if (distanceSqr < minDistanceFoundSqr)
+            if (distanceSqr < minDistanceSqr)
             {
-                minDistanceFoundSqr = distanceSqr;
-                closestSlot = slot;
+                minDistanceSqr = distanceSqr;
+                closest = slot;
             }
         }
-
-        bool placedSuccessfullyOnGrid = false;
-
-        if (closestSlot != null)
-        {
-            if (closestSlot == slotOccupiedBeforeDrag) // Trying to place back into the exact same grid slot
-            {
-                Debug.Log($"{gameObject.name} is over its original grid slot {closestSlot.name}. Attempting to place back.");
-                if (closestSlot.PlaceDie(gameObject, this.dieData))
-                {
-                    SetDieInSlotVisuals(closestSlot.transform);
-                    placedSuccessfullyOnGrid = true;
-                    Debug.Log($"{gameObject.name} placed back into its original slot {closestSlot.name}.");
-                }
-                else
-                {
-                    Debug.LogWarning($"Failed to place {gameObject.name} back into its original slot {closestSlot.name}.");
-                }
-            }
-            else if (!closestSlot.IsOccupied) // Trying to place in a new, unoccupied grid slot
-            {
-                Debug.Log($"{gameObject.name} is over a new, unoccupied slot {closestSlot.name}. Attempting to place.");
-                if (closestSlot.PlaceDie(gameObject, this.dieData))
-                {
-                    SetDieInSlotVisuals(closestSlot.transform);
-                    placedSuccessfullyOnGrid = true;
-
-                    if (slotOccupiedBeforeDrag == null && playerHand != null) // Came from hand
-                    {
-                        playerHand.NotifyDiePlacedOnGrid(gameObject);
-                        Debug.Log($"{gameObject.name} moved from hand to slot {closestSlot.name}. Notified PlayerHand.");
-                    }
-                    else // Came from another grid slot
-                    {
-                        Debug.Log($"{gameObject.name} moved from slot {slotOccupiedBeforeDrag?.name ?? "UnknownSlot"} to new slot {closestSlot.name}.");
-                    }
-                }
-                else
-                {
-                    Debug.LogWarning($"{gameObject.name} failed to place in slot {closestSlot.name} despite it appearing free.");
-                }
-            }
-            else // Closest slot is occupied by another die
-            {
-                Debug.Log($"Slot {closestSlot.name} is occupied by {closestSlot.OccupyingDie?.name ?? "another die"}. Cannot place {gameObject.name}.");
-            }
-        }
-
-        if (!placedSuccessfullyOnGrid)
-        {
-            Debug.Log($"{gameObject.name} was not placed on a grid slot. Attempting to return to hand.");
-            AttemptReturnToHand();
-        }
-        else
-        {
-            Debug.Log($"Stopped dragging {gameObject.name}. Final Parent: {transform.parent?.name ?? "None"} (On Grid)");
-        }
+        return closest;
     }
 
-    private void SetDieInSlotVisuals(Transform slotTransform)
+    // MODIFIED CheckAndPlaceInHandZone
+    private bool CheckAndPlaceInHandZone()
     {
-        transform.SetParent(slotTransform);
-        transform.localPosition = Vector3.zero;
-        transform.localRotation = Quaternion.identity; // Good practice to reset rotation
-        transform.localScale = Vector3.one; // And scale
-        rb.bodyType = RigidbodyType2D.Kinematic;
-    }
+        if (playerHand == null) // playerHand is now essential for this
+        {
+            Debug.LogError($"[DraggableDie] PlayerHand reference is null on {gameObject.name}. Cannot check for hand slot drop.");
+            return false;
+        }
 
-    private void AttemptReturnToHand()
+        List<Transform> currentHandSlots = playerHand.GetHandSlotTransforms();
+        if (currentHandSlots == null || currentHandSlots.Count == 0)
+        {
+            Debug.LogWarning($"[DraggableDie] No hand slots found via PlayerHand for {gameObject.name}.");
+            return false;
+        }
+
+        Vector2 dropPosition = GetMouseWorldPos();
+        // You could also test with: Vector2 dropPosition = transform.position;
+
+        foreach (Transform slotTransform in currentHandSlots)
+        {
+            if (slotTransform == null) continue;
+
+            float distanceToSlotCenterSqr = (dropPosition - (Vector2)slotTransform.position).sqrMagnitude;
+            // Use the new radius field for this check
+            float detectionRadiusSqr = handSlotDropDetectionRadius * handSlotDropDetectionRadius; 
+
+            if (distanceToSlotCenterSqr <= detectionRadiusSqr)
+            {
+                // Dropped within the radius of a specific hand slot
+                Debug.Log($"[DraggableDie] {gameObject.name} IS within radius of hand slot: {slotTransform.name}.");
+                bool cameFromGrid = (slotOccupiedBeforeDrag != null);
+                
+                if (playerHand.ReclaimDieToHand(gameObject, dieData))
+                {
+                    if (cameFromGrid)
+                    {
+                        TryRefundMana();
+                    }
+                    return true; // Successfully reclaimed
+                }
+                // If ReclaimDieToHand fails (e.g. hand full), we consider this attempt to place in hand zone as failed.
+                Debug.LogWarning($"[DraggableDie] Dropped {gameObject.name} near hand slot {slotTransform.name}, but PlayerHand.ReclaimDieToHand FAILED.");
+                return false; 
+            }
+        }
+        return false; // Not dropped near any hand slot
+    }
+    
+    // ... (AttemptReturnToAnyAvailableHandSlot, TryRefundMana, SetDieVisualsOnParent, GetMouseWorldPos remain the same) ...
+    // Ensure these methods are present from the previous version.
+    private void AttemptReturnToAnyAvailableHandSlot(bool potentiallyRefundMana)
     {
         if (playerHand != null)
         {
+            bool cameFromGridActualCheck = (slotOccupiedBeforeDrag != null); 
             if (playerHand.ReclaimDieToHand(gameObject, dieData))
             {
-                Debug.Log($"{gameObject.name} successfully returned to hand by PlayerHand.");
-                // PlayerHand.ReclaimDieToHand handles parenting and visuals.
+                if (potentiallyRefundMana && cameFromGridActualCheck) 
+                {
+                    TryRefundMana();
+                }
+                Debug.Log($"{gameObject.name} successfully returned to an available hand slot by PlayerHand.");
             }
             else
             {
-                Debug.LogError($"{gameObject.name} could not be returned to hand (e.g., hand full). Die left at current position: {transform.position}. Parent: {transform.parent?.name ?? "None"}");
-                // As a last resort, try to parent it to where it was before the drag if it was a hand slot,
-                // but this is risky if PlayerHand couldn't reclaim it.
-                // For now, it might be left floating if ReclaimDieToHand fails.
-                // Or, we could force it back to parentBeforeDrag if it's a hand slot
-                if (parentBeforeDrag != null && parentBeforeDrag.GetComponent<GridSlot>() == null) {
-                    transform.SetParent(parentBeforeDrag);
-                    transform.localPosition = Vector3.zero;
-                    Debug.LogWarning($"{gameObject.name} fallback: returned to its direct parentBeforeDrag ({parentBeforeDrag.name}) as PlayerHand couldn't reclaim.");
-                } else {
-                     Debug.LogWarning($"{gameObject.name} could not be returned to hand and previous parent was a grid slot or null. Die may be floating.");
-                }
+                Debug.LogError($"{gameObject.name} could not be returned to any hand slot (e.g., hand full). Die might be left floating.");
+            }
+        }
+        else Debug.LogError($"PlayerHand ref missing on {gameObject.name}. Cannot return to hand.");
+    }
+
+    private void TryRefundMana()
+    {
+        if (CombatManager.Instance != null && CombatManager.Instance.playerStats != null && this.dieData != null)
+        {
+            if (this.dieData.manaCost > 0)
+            {
+                CombatManager.Instance.playerStats.GainMana(this.dieData.manaCost);
+                Debug.Log($"Refunded {this.dieData.manaCost} mana for returning {this.dieData.name} (from grid) to hand. Player mana AFTER refund: {CombatManager.Instance.playerStats.CurrentMana}");
             }
         }
         else
         {
-            Debug.LogError($"PlayerHand reference missing on {gameObject.name}. Cannot return die to hand automatically. Die left at current position.");
+            Debug.LogError($"Could not attempt mana refund for {this.gameObject.name}: Critical system references missing (CombatManager, PlayerStats, or DieData).");
         }
-        Debug.Log($"Stopped dragging {gameObject.name}. Final Parent: {transform.parent?.name ?? "None"} (Attempted Hand Return)");
+    }
+
+    private void SetDieVisualsOnParent(Transform newParent)
+    {
+        transform.SetParent(newParent);
+        transform.localPosition = Vector3.zero;
+        transform.localRotation = Quaternion.identity;
+        transform.localScale = Vector3.one;
+        rb.bodyType = RigidbodyType2D.Kinematic;
     }
 
     private Vector3 GetMouseWorldPos()
@@ -227,4 +279,5 @@ public class DraggableDie : MonoBehaviour
         mousePoint.z = mainCamera.WorldToScreenPoint(this.startWorldPosition).z;
         return mainCamera.ScreenToWorldPoint(mousePoint);
     }
+    
 }
