@@ -520,68 +520,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 130016653}
   m_CullTransparentMesh: 1
---- !u!1 &193874835
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 193874837}
-  - component: {fileID: 193874836}
-  m_Layer: 0
-  m_Name: Enemy
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &193874836
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 193874835}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e6abfc6ad26a81489de03a2f157e676, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxHealth: 50
-  minAttack: 5
-  maxAttack: 10
-  healthText: {fileID: 1162530454}
-  blockText: {fileID: 1013045338}
-  intentText: {fileID: 636659678}
-  OnEnemyDied:
-    m_PersistentCalls:
-      m_Calls: []
-  OnHealthChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  OnBlockChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  OnIntentChanged:
-    m_PersistentCalls:
-      m_Calls: []
---- !u!4 &193874837
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 193874835}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &266274022
 GameObject:
   m_ObjectHideFlags: 0
@@ -900,8 +838,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 856f2d6427c0116428717a665d3870e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 100
-  maxMana: 3
+  maxHealth: 50
+  maxMana: 5
   healthText: {fileID: 858405851}
   blockText: {fileID: 20680896}
   manaText: {fileID: 130016655}
@@ -1465,7 +1403,7 @@ GameObject:
   - component: {fileID: 636659679}
   - component: {fileID: 636659678}
   m_Layer: 5
-  m_Name: EnemyIntent
+  m_Name: EnemyIntent_Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1931,7 +1869,7 @@ GameObject:
   - component: {fileID: 1013045339}
   - component: {fileID: 1013045338}
   m_Layer: 5
-  m_Name: EnemyBlock
+  m_Name: EnemyBlock_Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2168,7 +2106,7 @@ GameObject:
   - component: {fileID: 1162530455}
   - component: {fileID: 1162530454}
   m_Layer: 5
-  m_Name: EnemyHealth
+  m_Name: EnemyHP_Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2720,12 +2658,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerStats: {fileID: 493691539}
-  currentEnemy: {fileID: 193874836}
   playerHand: {fileID: 896486533}
+  enemyPrefabs:
+  - {fileID: 2856828127202622829, guid: b7d11892daa38104786389d2f3741219, type: 3}
+  - {fileID: 1785241860789459535, guid: 314c42de805718c428ee791ec84bf660, type: 3}
+  - {fileID: 7708964620878562251, guid: 8e892fbb1dc04ca44b839b1f9f4bcda0, type: 3}
+  enemySpawnPoint: {fileID: 1769647815}
   playTurnButton: {fileID: 266274024}
-  playerStartingHealth: 100
+  playerStartingHealth: 50
   playerStartingMaxMana: 3
-  enemyStartingHealth: 75
+  handSize: 5
   OnSetupCombatComplete:
     m_PersistentCalls:
       m_Calls: []
@@ -2737,19 +2679,7 @@ MonoBehaviour:
       m_Calls: []
   OnProcessSingleDie:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1668007438}
-        m_TargetAssemblyTypeName: CombatManager, Assembly-CSharp
-        m_MethodName: ResolveSingleDieAction
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
   OnPlayerActionPhaseEnd:
     m_PersistentCalls:
       m_Calls: []
@@ -2762,7 +2692,10 @@ MonoBehaviour:
   OnEnemyTurnEnd:
     m_PersistentCalls:
       m_Calls: []
-  OnCombatEnd:
+  OnAllEnemiesDefeated:
+    m_PersistentCalls:
+      m_Calls: []
+  OnPlayerDefeated:
     m_PersistentCalls:
       m_Calls: []
 --- !u!4 &1668007439
@@ -3014,6 +2947,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1cc24cbbc71cec3459a9144f33453f8c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &1769647814
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1769647815}
+  m_Layer: 0
+  m_Name: EnemiesList
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1769647815
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1769647814}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1786139038
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3379,4 +3343,4 @@ SceneRoots:
   - {fileID: 118247232}
   - {fileID: 1668007439}
   - {fileID: 493691540}
-  - {fileID: 193874837}
+  - {fileID: 1769647815}

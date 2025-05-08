@@ -14,8 +14,13 @@ public class CombatManager : MonoBehaviour
 
     [Header("Character References")]
     public PlayerStats playerStats; // Assign in Inspector
-    public Enemy currentEnemy;       // Assign in Inspector
+    private Enemy currentEnemyInstance;      // Assign in Inspector
     public PlayerHand playerHand;   // Assign in Inspector
+    
+    [Header("Enemy Management")]
+    [SerializeField] private List<GameObject> enemyPrefabs; // Assign your enemy prefabs in order
+    [SerializeField] private Transform enemySpawnPoint;   // Assign a Transform where enemies will spawn
+    private int currentEnemyPrefabIndex = 0;
 
     [Header("UI Elements")]
     public Button playTurnButton;     // Assign in Inspector
@@ -23,19 +28,19 @@ public class CombatManager : MonoBehaviour
     [Header("Combat Setup")]
     [SerializeField] private int playerStartingHealth = 100;
     [SerializeField] private int playerStartingMaxMana = 3;
-    [SerializeField] private int enemyStartingHealth = 75;
     [SerializeField] private int handSize = 5; // Number of dice to draw each turn
 
     [Header("Turn Flow Events")]
     public UnityEvent OnSetupCombatComplete;
-    public UnityEvent OnPlayerTurnStart;        
-    public UnityEvent OnPlayerActionPhaseStart; 
-    public ProcessDieActionEvent OnProcessSingleDie; 
-    public UnityEvent OnPlayerActionPhaseEnd;   
-    public UnityEvent OnEnemyTurnStart;         
-    public UnityEvent OnEnemyActionResolved;    
-    public UnityEvent OnEnemyTurnEnd;           
-    public UnityEvent OnCombatEnd;              
+    public UnityEvent OnPlayerTurnStart;
+    public UnityEvent OnPlayerActionPhaseStart;
+    public ProcessDieActionEvent OnProcessSingleDie;
+    public UnityEvent OnPlayerActionPhaseEnd;
+    public UnityEvent OnEnemyTurnStart;
+    public UnityEvent OnEnemyActionResolved;
+    public UnityEvent OnEnemyTurnEnd;
+    public UnityEvent OnAllEnemiesDefeated; // Changed from OnCombatEnd to be more specific
+    public UnityEvent OnPlayerDefeated;            
 
     private bool isPlayerTurn = true;
     private List<GridSlot> slotsWithDiceToProcess = new List<GridSlot>();
@@ -57,38 +62,83 @@ public class CombatManager : MonoBehaviour
 
     void Start()
     {
-        if (playerStats == null || currentEnemy == null || playerHand == null)
+        if (playerStats == null || playerHand == null)
         {
-            Debug.LogError("PlayerStats, Enemy, or PlayerHand not assigned/found in CombatManager! Combat cannot start properly.");
-            if(playTurnButton != null) playTurnButton.interactable = false;
+            Debug.LogError("PlayerStats or PlayerHand not assigned/found in CombatManager! Combat cannot start properly.");
+            if (playTurnButton != null) playTurnButton.interactable = false;
             return;
         }
-        
-        SetupNewCombat();
+        if (enemyPrefabs == null || enemyPrefabs.Count == 0)
+        {
+            Debug.LogError("No enemy prefabs assigned in CombatManager!");
+            if (playTurnButton != null) playTurnButton.interactable = false;
+            return;
+        }
+        if (enemySpawnPoint == null)
+        {
+            Debug.LogError("Enemy Spawn Point not assigned in CombatManager!");
+            if (playTurnButton != null) playTurnButton.interactable = false;
+            return;
+        }
+
+        SetupFirstCombat();
 
         if (playTurnButton != null)
         {
             playTurnButton.onClick.AddListener(HandlePlayTurnButtonPressed);
         }
-        else
-        {
-            Debug.LogWarning("PlayTurnButton not assigned in CombatManager.");
-        }
-        
-        OnProcessSingleDie.RemoveListener(ResolveSingleDieAction); 
+        OnProcessSingleDie.RemoveListener(ResolveSingleDieAction);
         OnProcessSingleDie.AddListener(ResolveSingleDieAction);
     }
-
-    void SetupNewCombat()
+    
+        void SetupFirstCombat()
     {
-        Debug.Log("Setting up new combat...");
+        Debug.Log("Setting up first combat...");
+        currentEnemyPrefabIndex = 0; // Start with the first enemy in the list
         playerStats.Initialize(playerStartingHealth, playerStartingHealth, playerStartingMaxMana, playerStartingMaxMana);
-        
-        currentEnemy.gameObject.SetActive(true); 
-        currentEnemy.Initialize(enemyStartingHealth, enemyStartingHealth);
+
+        if (!SpawnEnemy(currentEnemyPrefabIndex))
+        {
+            Debug.LogError("Failed to spawn the first enemy. Check enemyPrefabs list.");
+            if(playTurnButton != null) playTurnButton.interactable = false;
+            return;
+        }
         
         OnSetupCombatComplete?.Invoke();
-        StartPlayerTurnCycle(); // This will now include drawing the initial hand
+        StartPlayerTurnCycle();
+    }
+
+    bool SpawnEnemy(int prefabIndex)
+    {
+        if (currentEnemyInstance != null)
+        {
+            Destroy(currentEnemyInstance.gameObject); // Destroy previous enemy if any
+            currentEnemyInstance = null;
+        }
+
+        if (prefabIndex >= enemyPrefabs.Count || enemyPrefabs[prefabIndex] == null)
+        {
+            Debug.LogWarning($"Enemy prefab at index {prefabIndex} is missing or index out of bounds.");
+            return false; // No more enemies or invalid prefab
+        }
+
+        GameObject enemyGO = Instantiate(enemyPrefabs[prefabIndex], enemySpawnPoint.position, enemySpawnPoint.rotation, enemySpawnPoint);
+        currentEnemyInstance = enemyGO.GetComponent<Enemy>();
+
+        if (currentEnemyInstance == null)
+        {
+            Debug.LogError($"Spawned enemy prefab {enemyPrefabs[prefabIndex].name} is missing an Enemy component!");
+            Destroy(enemyGO);
+            return false;
+        }
+        
+        // Enemy's Initialize method should set its health based on its own prefab's values or passed parameters
+        // For example, Enemy.Initialize(enemySpecificMaxHealth, enemySpecificMaxHealth)
+        // Let's assume Enemy.cs has an Initialize method that handles its own setup (e.g. from its serialized fields)
+        currentEnemyInstance.InitializeFromStats(); // You'd add this method to Enemy.cs to use its own serialized maxHealth
+
+        Debug.Log($"Spawned new enemy: {currentEnemyInstance.name}");
+        return true;
     }
 
     void StartPlayerTurnCycle()
@@ -97,22 +147,15 @@ public class CombatManager : MonoBehaviour
         isPlayerTurn = true;
         if (playerStats != null)
         {
-            playerStats.ClearBlock();       
-            playerStats.RefillManaToMax();  
+            playerStats.ClearBlock();
+            playerStats.RefillManaToMax();
         }
-        if (currentEnemy != null) currentEnemy.PrepareIntent();   
+        if (currentEnemyInstance != null) currentEnemyInstance.PrepareIntent();
 
-        if (playerHand != null)
-        {
-            playerHand.DrawNewHand(handSize); // Discard old hand and draw a fresh one
-        }
-        else
-        {
-            Debug.LogError("PlayerHand reference not set in CombatManager. Cannot draw new hand.");
-        }
+        if (playerHand != null) playerHand.DrawNewHand(handSize);
+        else Debug.LogError("PlayerHand reference not set. Cannot draw new hand.");
 
-        OnPlayerTurnStart?.Invoke();    
-
+        OnPlayerTurnStart?.Invoke();
         if (playTurnButton != null) playTurnButton.interactable = true;
     }
 
@@ -193,7 +236,7 @@ public class CombatManager : MonoBehaviour
         switch (dieData.actionType)
         {
             case DieActionType.Attack:
-                if (dieData.targetType == TargetType.SingleEnemy && currentEnemy != null) currentEnemy.TakeDamage(rollValue);
+                if (dieData.targetType == TargetType.SingleEnemy && currentEnemyInstance  != null) currentEnemyInstance .TakeDamage(rollValue);
                 else Debug.LogWarning($"Attack die {dieData.name} has unhandled target type: {dieData.targetType} or no enemy.");
                 break;
             case DieActionType.Block:
@@ -242,30 +285,69 @@ public class CombatManager : MonoBehaviour
         Debug.Log("--- Player's Turn Ended. Enemy's Turn Begun ---");
         OnEnemyTurnStart?.Invoke();
 
-        if (currentEnemy != null && currentEnemy.CurrentHealth > 0) 
+        if (currentEnemyInstance != null && currentEnemyInstance.CurrentHealth > 0)
         {
-            currentEnemy.ClearBlock();          
-            currentEnemy.ExecuteAction(playerStats); 
+            currentEnemyInstance.ClearBlock();
+            currentEnemyInstance.ExecuteAction(playerStats); // Enemy performs its action
+        }
+        else if (currentEnemyInstance == null)
+        {
+            Debug.LogWarning("No current enemy instance to act.");
         }
         OnEnemyActionResolved?.Invoke();
 
         Debug.Log("--- Enemy's Turn Ended ---");
         OnEnemyTurnEnd?.Invoke();
 
+        // Check for game over conditions
         if (playerStats != null && playerStats.CurrentHealth <= 0)
         {
             Debug.Log("Game Over - Player Defeated!");
-            OnCombatEnd?.Invoke();
+            OnPlayerDefeated?.Invoke(); // Use a specific event for player defeat
             if (playTurnButton != null) playTurnButton.interactable = false;
             return;
         }
-        if (currentEnemy != null && currentEnemy.CurrentHealth <= 0)
+
+        if (currentEnemyInstance != null && currentEnemyInstance.CurrentHealth <= 0)
         {
-            Debug.Log("Victory - Enemy Defeated!");
-            OnCombatEnd?.Invoke();
-            if (playTurnButton != null) playTurnButton.interactable = false;
-            return;
+            HandleEnemyDefeated(); // New method to handle enemy defeat and progression
+            return; // HandleEnemyDefeated will decide if a new turn starts or game ends
         }
-        StartPlayerTurnCycle();
+        
+        // If no one died and enemy is still there (e.g. enemy didn't die this turn)
+        if(currentEnemyInstance != null && currentEnemyInstance.CurrentHealth > 0) {
+            StartPlayerTurnCycle(); // Loop back to player's turn
+        }
+    }
+    
+    void HandleEnemyDefeated()
+    {
+        Debug.Log($"Victory - Enemy {currentEnemyInstance.name} Defeated!");
+        // Optional: Invoke an event specific to defeating one enemy
+        // OnSingleEnemyDefeated?.Invoke(); 
+
+        currentEnemyPrefabIndex++; // Move to the next enemy in the list
+
+        if (currentEnemyPrefabIndex < enemyPrefabs.Count)
+        {
+            Debug.Log("Spawning next enemy...");
+            if (!SpawnEnemy(currentEnemyPrefabIndex))
+            {
+                Debug.LogError("Failed to spawn next enemy. Ending combat as player technically won this wave.");
+                OnAllEnemiesDefeated?.Invoke(); // Or some other event indicating no more enemies to spawn
+                if (playTurnButton != null) playTurnButton.interactable = false;
+                return;
+            }
+            // Player's stats (health, maxMana) carry over.
+            // Block will be cleared and mana refilled by StartPlayerTurnCycle.
+            StartPlayerTurnCycle(); // Start a new player turn against the new enemy
+        }
+        else
+        {
+            Debug.Log("All enemies in the sequence defeated! Player wins the game/run!");
+            OnAllEnemiesDefeated?.Invoke(); // Signal overall victory
+            if (playTurnButton != null) playTurnButton.interactable = false;
+            // Handle game won logic (e.g., show victory screen)
+        }
     }
 }

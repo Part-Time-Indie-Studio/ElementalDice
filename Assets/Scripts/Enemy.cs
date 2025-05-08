@@ -14,21 +14,20 @@ public enum EnemyActionType
 
 public class Enemy : MonoBehaviour
 {
-    [Header("Stats")]
-    [SerializeField] private int maxHealth = 50;
-    public int CurrentHealth { get; private set; }
-    public int CurrentBlock { get; private set; }
-
-    [Header("Combat AI")]
-    public int AttackIntentValue { get; private set; }
-    public EnemyActionType NextActionType { get; private set; }
-    [SerializeField] private int minAttack = 5; // Example: Enemy attacks between 5-10
+    [Header("Base Stats (Editable in Prefab)")]
+    [SerializeField] private int maxHealth = 50; // Default max health for this enemy type
+    [SerializeField] private int minAttack = 5; 
     [SerializeField] private int maxAttack = 10;
 
-    [Header("UI References")]
+    public int CurrentHealth { get; private set; }
+    public int CurrentBlock { get; private set; }
+    public int AttackIntentValue { get; private set; }
+    public EnemyActionType NextActionType { get; private set; }
+
+    [Header("UI References (Optional - can be auto-found or set on prefab)")]
     [SerializeField] private TextMeshProUGUI healthText;
     [SerializeField] private TextMeshProUGUI blockText;
-    [SerializeField] private TextMeshProUGUI intentText; // To show what the enemy plans to do
+    [SerializeField] private TextMeshProUGUI intentText;
 
     public UnityEvent OnEnemyDied;
     public UnityEvent OnHealthChanged;
@@ -43,15 +42,36 @@ public class Enemy : MonoBehaviour
         UpdateUI();
     }
     
+    public void InitializeFromStats()
+    {
+        CurrentHealth = maxHealth; // Start with full health defined in prefab
+        CurrentBlock = 0;
+        Debug.Log($"{gameObject.name} initialized with {CurrentHealth}/{maxHealth} HP.");
+        FindAndAssignUITexts();
+        UpdateUI();
+        OnHealthChanged.Invoke();
+        OnBlockChanged.Invoke();
+        // PrepareIntent(); // CombatManager will call this at start of player's turn
+    }
+    
+    // Overload or alternative if CombatManager dictates stats
     public void Initialize(int startingHealth, int newMaxHealth)
     {
         maxHealth = newMaxHealth;
         CurrentHealth = startingHealth;
         CurrentBlock = 0;
+        Debug.Log($"{gameObject.name} initialized with {CurrentHealth}/{maxHealth} HP (custom).");
+        FindAndAssignUITexts();
         UpdateUI();
         OnHealthChanged.Invoke();
         OnBlockChanged.Invoke();
-        // PrepareIntent(); // Prepare first intent when initialized
+    }
+    
+    private void FindAndAssignUITexts()
+    {
+        if (healthText == null) healthText = GameObject.Find("EnemyHP_Text")?.GetComponent<TextMeshProUGUI>();
+        if (blockText == null) blockText = GameObject.Find("EnemyBlock_Text")?.GetComponent<TextMeshProUGUI>();
+        if (intentText == null) intentText = GameObject.Find("EnemyIntent_Text")?.GetComponent<TextMeshProUGUI>();
     }
 
     public void AddBlock(int amount)
